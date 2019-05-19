@@ -1,0 +1,22 @@
+{
+  "name": "image-manipulation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src",
+    "test": "mocha --recursive ./src/*/*.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "get-pixels": "^3.3.2",
+    "jimp": "^0.6.4"
+  },
+  "devDependencies": {
+    "mocha": "^6.1.4"
+  },
+  "mocha": {
+
+  }
+}
