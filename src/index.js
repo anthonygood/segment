@@ -5,16 +5,9 @@ const range = require('./util/range')
 
 const TEST_IMG_PATH = path.resolve(__dirname, 'img/wiki-excerpt.png')
 const OUTPUT_PATH = 'wiki-excerpt-PROCESSED.png'
-const THRESHOLD = 250
-
-const OFFSET = 5
-function* crosshair(x, y) {
-  for (const xi of range(x - OFFSET, x + OFFSET)) {
-    for (const yi of range(y - OFFSET, y + OFFSET)) {
-      yield [xi, yi]
-    }
-  }
-}
+const THRESHOLD = 240
+const BLUR = 1
+const SCALE = .1
 
 function* lineX(constant, i1, i2) {
   for (const i of range(i1, i2)) {
@@ -73,13 +66,8 @@ class RegionManager {
   }
 
   draw(image = this._image) {
-    console.log('DRAW')
     this._regions.forEach((region, i) => {
       const red   = 0xff0000ff
-      const green = 0x00ff00ff
-      const blue  = 0x0000ffff
-
-      const colour = i % 2 ? red : blue
 
       const { lo: [x1, y1], hi: [x2, y2] } = region
       const lines = [
@@ -94,23 +82,6 @@ class RegionManager {
           image.setPixelColour(red, x, y)
         }
       }
-
-
-      // region.bounds().forEach(point => {
-      //   const { hi, lo } = reg
-      //   process.stdout.write('o')
-
-      //   console.log(point)
-
-      //   for (const [x, y] of crosshair(...point)) {
-      //     process.stdout.write('*')
-      //     image.setPixelColour(red, x, y)
-      //   }
-      // })
-
-      // image
-        // .setPixelColour(red, ...r.lo)
-        // .setPixelColour(green, ...r.hi)
     })
 
     return this
@@ -121,10 +92,8 @@ const main = async () => {
   const image = await jimp.read(TEST_IMG_PATH)
 
   await image
-    .blur(17)
-    .scale(.1)
-    // .contrast(.25)
-    // .write(OUTPUT_PATH)
+    .scale(SCALE)
+    .blur(BLUR)
 
   const regions = new RegionManager(image).scan()
 
