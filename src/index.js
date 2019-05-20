@@ -6,29 +6,38 @@ const range = require('./util/range')
 const TEST_IMG_PATH = path.resolve(__dirname, 'img/wiki-excerpt.png')
 const OUTPUT_PATH = 'wiki-excerpt-PROCESSED.png'
 const THRESHOLD = 240
-const BLUR = 1
+const BLUR = 10
 const SCALE = .1
 
+const scale = (scale, ...values) =>
+  values.map(_ => _ / scale)
+
 function* lineX(constant, i1, i2) {
-  for (const i of range(i1, i2)) {
-    yield [constant, i]
+  const [constantS, is1, is2] = scale(SCALE, constant, i1, i2)
+  for (const i of range(is1, is2)) {
+    yield [constantS, i]
   }
 }
 
 // Similar to above but yielded values are flipped
 function* lineY(y, x1, x2) {
-  for (const [_, x] of lineX(y, x1, x2)) {
-    yield [x, y]
+  for (const [sy, sx] of lineX(y, x1, x2)) {
+    yield [sx, sy]
   }
 }
 
 class RegionManager {
   constructor(image) {
-    const { width, height } = image.bitmap
-    this._image = image.clone().greyscale()
-    this._width = width
-    this._height = height
+    this._image = this.preprocess(image)
     this._regions = []
+  }
+
+  preprocess(image) {
+    return image
+      .clone()
+      .greyscale()
+      .blur(BLUR)
+      .scale(SCALE)
   }
 
   findByLocation(x, y) {
@@ -50,16 +59,18 @@ class RegionManager {
   scan(
     x = 0,
     y = 0,
-    w = this._width,
-    h = this._height,
+    w = this._image.bitmap.width,
+    h = this._image.bitmap.height,
   ) {
     const image = this._image
     const bitmap = image.bitmap.data
 
+    console.debug(`Scanning image w ${w} h ${h}.`)
+
     image.scan(x, y, w, h, (x, y, idx) => {
       // RGB all equal value in greyscale image
-      const red = bitmap[idx]
-      red < THRESHOLD && this.add(x, y)
+      const redVal = bitmap[idx]
+      redVal < THRESHOLD && this.add(x, y)
     })
 
     return this
@@ -67,7 +78,9 @@ class RegionManager {
 
   draw(image = this._image) {
     this._regions.forEach((region, i) => {
-      const red   = 0xff0000ff
+      const red = 0xff0000ff
+
+      console.debug(`Drawing region ${region.lo}, ${region.hi} of area ${region.area}`)
 
       const { lo: [x1, y1], hi: [x2, y2] } = region
       const lines = [
@@ -86,15 +99,14 @@ class RegionManager {
 
     return this
   }
+
+  get length() {
+    return this._regions.length
+  }
 }
 
 const main = async () => {
   const image = await jimp.read(TEST_IMG_PATH)
-
-  await image
-    .scale(SCALE)
-    .blur(BLUR)
-
   const regions = new RegionManager(image).scan()
 
   regions.draw(image)

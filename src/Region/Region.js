@@ -69,8 +69,20 @@ class Region {
     ]
   }
 
-  hypotenuse() {
+  get width() {
+    const [loX] = this.lo
+    const [hiX] = this.hi
+    return hiX - loX
+  }
 
+  get height() {
+    const [, loY] = this.lo
+    const [, hiY] = this.hi
+    return hiY - loY
+  }
+
+  get area() {
+    return this.width * this.height
   }
 }
 
