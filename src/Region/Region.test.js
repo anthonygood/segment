@@ -72,12 +72,6 @@ describe('Region', () => {
         assert.equal(hiX, 3)
         assert.equal(hiY, 1)
       })
-
-      describe('can query #contains with new region', () => {
-        it('is true for values inside new region', () => {
-
-        })
-      })
     })
 
     describe('adding pixel AFTER region', () => {

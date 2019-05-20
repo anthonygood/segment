@@ -1,17 +1,16 @@
 const range = require('../util/range')
+const Config = require('../util/Config')
 
-const DEFAULTS = {
-  margin: 1
+class RegionConfig extends Config {
+  static get DEFAULTS() {
+    return {
+      margin: 1
+    }
+  }
 }
 
 const scale = (scale, ...values) =>
   values.map(_ => _ * scale)
-
-class RegionConfig {
-  constructor(config = {}) {
-    Object.assign(this, DEFAULTS, config)
-  }
-}
 
 // Quadrilateral region
 class Region {
