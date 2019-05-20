@@ -4,6 +4,9 @@ const DEFAULTS = {
   margin: 1
 }
 
+const scale = (scale, ...values) =>
+  values.map(_ => _ * scale)
+
 class RegionConfig {
   constructor(config = {}) {
     Object.assign(this, DEFAULTS, config)
@@ -67,6 +70,15 @@ class Region {
       [hiX, loY],
       [hiX, hiY]
     ]
+  }
+
+  scale(num) {
+    const [loX, loY] = this.lo
+    const [hiX, hiY] = this.hi
+
+    const [x1, y1, x2, y2] = scale(num, loX, loY, hiX, hiY)
+
+    return new Region(x1, y1, x2, y2, this.config)
   }
 
   get width() {
