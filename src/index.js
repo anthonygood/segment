@@ -9,7 +9,7 @@ const process = async filename => {
   const filepath = getPath(filename)
   const outputFile = getOutputPath(filename)
   const image = await jimp.read(filepath)
-  const regions = new RegionManager(image).scan()
+  const regions = new RegionManager(image).scan(2)
 
   await regions.drawAndOpen('region_' + outputFile)
   await regions.drawAndOpen(outputFile, image, PROC_IMAGE_TO_FULL_SIZE_SCALE)
@@ -25,7 +25,7 @@ const main = async () => {
     // 'wiki-excerpt',
   // ].forEach(process)
 
-  const regions = process('CVs/CV1')
+  return process('CVs/CV1')
 
   // Array.from({ length: 5 }).fill()
   //   .map((_, i) => `CVs/CV${i + 1}`)

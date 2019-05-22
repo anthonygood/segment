@@ -6,7 +6,7 @@ const { lineX, lineY } = require('../util/draw')
 class RegionManagerConfig extends Config {
   static get DEFAULTS() {
     return {
-      BLUR: 1,
+      BLUR: 10,
       PROC_IMAGE_SCALE: .1,
       THRESHOLD: 240,
     }
@@ -14,10 +14,19 @@ class RegionManagerConfig extends Config {
 }
 
 class RegionManager {
-  constructor(image, config) {
-    this.config = new RegionManagerConfig(config)
+  constructor(image, config, x, y, w, h) {
+    this.config = config instanceof RegionManagerConfig ?
+      config :
+      new RegionManagerConfig(config)
+
+    // TODO: set bounds here? or in scan()?
+    // this.x = x
+    // this.y = y
+    // this.w = w
+    // this.h = h
     this._regions = []
-    this._image = this.preprocess(image)
+    this._originalImage = image
+    this._image = this.preprocess(image) // With recursive scanning, this is onerous
   }
 
   preprocess(image) {
@@ -25,11 +34,12 @@ class RegionManager {
       BLUR,
       PROC_IMAGE_SCALE
     } = this.config
+
     return image
       .clone()
       .greyscale()
-      .scale(PROC_IMAGE_SCALE)
       .blur(BLUR)
+      .scale(PROC_IMAGE_SCALE)
   }
 
   // Return a tuple of two arrays: first includes all regions touching xy,
@@ -67,10 +77,11 @@ class RegionManager {
   }
 
   scan(
+    depth = 1,
     x = 0,
     y = 0,
     w = this._image.bitmap.width,
-    h = this._image.bitmap.height,
+    h = this._image.bitmap.height
   ) {
     const image = this._image
     const bitmap = image.bitmap.data
@@ -83,10 +94,26 @@ class RegionManager {
       redVal < this.config.THRESHOLD && this.add(x, y)
     })
 
+    if (depth > 1) {
+      console.log('subdividing region')
+      this._rms = this._regions.map(region => new RegionManager(
+        this._originalImage,
+        { ...this.config, BLUR: this.config.BLUR / depth }
+      ).scan(
+        depth - 1,
+        ...region.lo, // x, y
+        ...region.hi, // w, h
+      ))
+    }
+
     return this
   }
 
-  draw(image = this._image, scale = 1) {
+  draw(
+    image = this._image,
+    scale = 1,
+    colour = 0xff0000ff // red
+  ) {
     this._regions.forEach((region, i) => {
       const red = 0xff0000ff
 
@@ -100,10 +127,14 @@ class RegionManager {
 
       for (const line of lines) {
         for (const [x, y] of line) {
-          image.setPixelColour(red, x, y)
+          image.setPixelColour(colour, x, y)
         }
       }
     })
+
+    if (this._rms) {
+      this._rms.forEach(regionManager => regionManager.draw(image, scale, 0xffff0000))
+    }
 
     return this
   }
@@ -115,6 +146,8 @@ class RegionManager {
 
   async drawAndOpen(filename, image = this._image, scale = 1) {
     await this.drawAndSave(filename, image, scale)
+
+    // Without setTimeout seems unreliable ...
     return setTimeout(() => proc.execSync(`open ${filename}`), 250)
   }
 
