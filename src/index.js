@@ -16,13 +16,18 @@ const process = async filename => {
 }
 
 const main = () => {
-  [
-    'cv',
+  // [
+    // 'cv',
     // 'ft',
     // 'gmail',
     // 'guardian',
     // 'wiki-excerpt',
-  ].forEach(process)
+  // ].forEach(process)
+
+  Array.from({ length: 5 })
+    .fill()
+    .map((_, i) => `CVs/CV${i + 1}`)
+    .forEach(process)
 }
 
 main()

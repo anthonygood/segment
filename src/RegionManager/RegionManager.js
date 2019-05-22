@@ -6,7 +6,7 @@ const { lineX, lineY } = require('../util/draw')
 class RegionManagerConfig extends Config {
   static get DEFAULTS() {
     return {
-      BLUR: 10,
+      BLUR: 1,
       PROC_IMAGE_SCALE: .1,
       THRESHOLD: 240,
     }
@@ -28,8 +28,8 @@ class RegionManager {
     return image
       .clone()
       .greyscale()
-      .blur(BLUR)
       .scale(PROC_IMAGE_SCALE)
+      .blur(BLUR)
   }
 
   findByLocation(x, y) {
