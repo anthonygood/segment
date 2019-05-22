@@ -13,9 +13,10 @@ const process = async filename => {
 
   await regions.drawAndOpen('region_' + outputFile)
   await regions.drawAndOpen(outputFile, image, PROC_IMAGE_TO_FULL_SIZE_SCALE)
+  return regions
 }
 
-const main = () => {
+const main = async () => {
   // [
     // 'cv',
     // 'ft',
@@ -24,10 +25,12 @@ const main = () => {
     // 'wiki-excerpt',
   // ].forEach(process)
 
-  Array.from({ length: 5 })
-    .fill()
-    .map((_, i) => `CVs/CV${i + 1}`)
-    .forEach(process)
+  const regions = process('CVs/CV1')
+
+  // Array.from({ length: 5 }).fill()
+  //   .map((_, i) => `CVs/CV${i + 1}`)
+  //   .forEach(process)
 }
 
 main()
+module.exports = main

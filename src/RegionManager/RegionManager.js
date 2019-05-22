@@ -32,18 +32,36 @@ class RegionManager {
       .blur(BLUR)
   }
 
-  findByLocation(x, y) {
-    return this._regions.find(region => region.touches(x, y))
+  // Return a tuple of two arrays: first includes all regions touching xy,
+  // second array includes all other regions.
+  bisect(x, y) {
+    const touching = []
+    const other = []
+
+    this._regions.forEach(region => {
+      const category = region.touches(x, y) ? touching : other
+      category.push(region)
+    })
+
+    return [touching, other]
   }
 
   add(x, y) {
-    const region = this.findByLocation(x, y)
+    const [touching, other] = this.bisect(x, y)
+    const [region, ...rest] = touching.length ? touching : [new Region(x, y)]
 
-    if (region) {
-      region.add(x, y)
-    } else {
-      this._regions.push(new Region(x, y))
+    // If more than one region touches this location,
+    // consolidate regions before adding location to region.
+    if (rest.length) {
+      rest.forEach(r => region.addRegion(r))
     }
+
+    region.add(x, y)
+
+    // Reset _regions in case consolidation occurred
+    // TODO: should only do this if it does?
+    this._regions = other
+    this._regions.push(region)
 
     return this
   }

@@ -23,6 +23,7 @@ class Region {
   ) {
     this.lo = [x1, y1]
     this.hi = [x2, y2]
+    this.consolidated = false
 
     this.config = new RegionConfig(config)
   }
@@ -33,6 +34,13 @@ class Region {
 
     this.lo = [Math.min(loX, x), Math.min(loY, y)]
     this.hi = [Math.max(hiX, x), Math.max(hiY, y)]
+    return this
+  }
+
+  addRegion({ lo, hi }) {
+    this.add(...lo)
+    this.add(...hi)
+    this.consolidated = true
     return this
   }
 
