@@ -95,7 +95,7 @@ class RegionManager {
     })
 
     if (depth > 1) {
-      console.log('subdividing region')
+      console.log('Scanning region recursively.')
       this._rms = this._regions.map(region => new RegionManager(
         this._originalImage,
         { ...this.config, BLUR: this.config.BLUR / depth }
@@ -115,8 +115,6 @@ class RegionManager {
     colour = 0xff0000ff // red
   ) {
     this._regions.forEach((region, i) => {
-      const red = 0xff0000ff
-
       const { lo: [x1, y1], hi: [x2, y2] } = region.scale(scale)
       const lines = [
         lineY(y1, x1, x2),
@@ -133,7 +131,7 @@ class RegionManager {
     })
 
     if (this._rms) {
-      this._rms.forEach(regionManager => regionManager.draw(image, scale, 0xffff0000))
+      this._rms.forEach(regionManager => regionManager.draw(image, scale, 0x00ff00ff))
     }
 
     return this
