@@ -1,5 +1,7 @@
 const Region = require('../Region/Region')
 const RegionManagerConfig = require('./RegionManagerConfig')
+const { bisect } = require('../util/util')
+const { GREEN, RED } = require('../util/draw')
 
 let i = 0
 
@@ -31,22 +33,8 @@ class RegionManager {
       .scale(PROC_IMAGE_SCALE)
   }
 
-  // Return a tuple of two arrays: first includes all regions fulfilling fn(region),
-  // second array includes all other regions.
-  bisect(fn) {
-    const yes = []
-    const no = []
-
-    this._regions.forEach(region => {
-      const category = fn(region) ? yes : no
-      category.push(region)
-    })
-
-    return [yes, no]
-  }
-
   add(x, y) {
-    const [touching, other] = this.bisect(region => region.touches(x, y))
+    const [touching, other] = bisect(this._regions, region => region.touches(x, y))
     const [region, ...rest] = touching.length ? touching : [new Region(x, y)]
 
     // If more than one region touches this location,
@@ -141,7 +129,7 @@ class RegionManager {
   draw(
     scale = 1,
     image = this._originalImage,
-    colour = 0xff0000ff // red
+    colour = RED
   ) {
     this._regions.forEach(region => {
       const lines = region.scale(scale).border()
@@ -159,7 +147,7 @@ class RegionManager {
         regionManager.draw(
           scale / regionManager.config.RECURSIVE_SCALE_FACTOR,
           image,
-          0x00ff00ff
+          GREEN
         )
       )
     }

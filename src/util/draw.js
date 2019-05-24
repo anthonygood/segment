@@ -1,5 +1,9 @@
 const range = require('./range')
 
+const BLUE  = 0x0000ffff
+const GREEN = 0x00ff00ff
+const RED   = 0xff0000ff
+
 function* lineX(constant, i1, i2) {
   for (const i of range(i1, i2)) {
     yield [constant, i]
@@ -14,5 +18,6 @@ function* lineY(y, x1, x2) {
 }
 
 module.exports = {
-  lineX, lineY
+  lineX, lineY,
+  BLUE, GREEN, RED
 }
