@@ -8,10 +8,11 @@ class RegionManagerConfig extends Config {
     return {
       BLUR: 10,
       PROC_IMAGE_SCALE: .1, // scale for processing image at
-      DRAW_SCALE: 10,       // scale back up from processed image to full size
-      THRESHOLD: 240,
+      DRAW_SCALE: 10,    // NOT NEEDED? scale back up from processed image to full size
+      THRESHOLD: 240,       // min pixel value to be added to region
       MIN_HEIGHT: 2,
-      MIN_WIDTH: 2
+      MIN_WIDTH: 2,
+      RECURSIVE_SCALE_FACTOR: 2,
     }
   }
 }
@@ -86,23 +87,21 @@ class RegionManager {
     return this
   }
 
-  scan(
-    depth = 1,
-    x = 0,
-    y = 0,
-    w = this._image.bitmap.width,
-    h = this._image.bitmap.height,
-    scale = this.config.DRAW_SCALE
-  ) {
+  scan(depth = 1) {
+    const x = 0
+    const y = 0
+    const w = this._image.bitmap.width
+    const h = this._image.bitmap.height
     const image = this._image
     const bitmap = image.bitmap.data
+    const { THRESHOLD } = this.config
 
     console.debug(`Scanning image w ${w} h ${h}.`)
 
     image.scan(x, y, w, h, (x, y, idx) => {
       // RGB all equal value in greyscale image
       const redVal = bitmap[idx]
-      redVal < this.config.THRESHOLD && this.add(x, y)
+      redVal < THRESHOLD && this.add(x, y)
     })
 
     this.cleanRegions()
@@ -112,16 +111,23 @@ class RegionManager {
 
       this._rms = this._regions.map(
         region => {
+          const {
+            BLUR,
+            PROC_IMAGE_SCALE,
+            DRAW_SCALE,
+            RECURSIVE_SCALE_FACTOR,
+          } = this.config
           // TODO: this logic could be moved to constructor?
-          const scaled = region.scale(scale)
+          const scaled = region.scale(DRAW_SCALE)
           const { lo: [x1, y1] } = scaled
-          const regionImage = image.clone().crop(x1, y1, scaled.width, scaled.height)
+          const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
+          regionImage.write(`region_image_${region.lo}.png`)
           return new RegionManager(
             regionImage,
             {
               ...this.config,
-              BLUR: this.config.BLUR / depth,
-              // PROC_IMAGE_SCALE: this.config.PROC_IMAGE_SCALE * 2, //TODO!
+              BLUR: BLUR / depth,
+              PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
             },
             ...scaled.lo
           ).scan(depth - 1)
@@ -159,19 +165,6 @@ class RegionManager {
     scale = 1,
     colour = 0xff0000ff // red
   ) {
-    const rmBorder = [
-      lineY(0, 0, this._image.width),
-      lineY(this._image.height, 0, this._image.width),
-      lineX(0, 0, this._image.height),
-      lineX(this._image.height, 0, this._image.height),
-    ]
-
-    for (const border of rmBorder) {
-      for (const [x, y] of border) {
-        image.setPixelColour(0xffff00ff, x, y)
-      }
-    }
-
     this._regions.forEach(region => {
       const { lo: [x1, y1], hi: [x2, y2] } = region.scale(scale)
 
@@ -192,7 +185,11 @@ class RegionManager {
     if (this._rms) {
       // Need to apply a transformation to place regions correctly on image
       this._rms.forEach(regionManager =>
-        regionManager.draw(image, scale, 0x00ff00ff)
+        regionManager.draw(
+          image,
+          scale / regionManager.config.RECURSIVE_SCALE_FACTOR,
+          0x00ff00ff
+        )
       )
     }
 
