@@ -121,7 +121,7 @@ class RegionManager {
           const scaled = region.scale(DRAW_SCALE)
           const { lo: [x1, y1] } = scaled
           const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
-          regionImage.write(`region_image_${region.lo}.png`)
+
           return new RegionManager(
             regionImage,
             {
