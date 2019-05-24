@@ -11,7 +11,7 @@ const process = async filename => {
   const image = await jimp.read(filepath)
   const regions = new RegionManager(image).scan(2)
 
-  await regions.drawAndOpen('region_' + outputFile)
+  // await regions.drawAndOpen('region_' + outputFile)
   await regions.drawAndOpen(outputFile, image, PROC_IMAGE_TO_FULL_SIZE_SCALE)
   return regions
 }
