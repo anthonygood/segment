@@ -1,20 +1,5 @@
-const proc = require('child_process')
 const Region = require('../Region/Region')
-const Config = require('../util/Config')
-
-class RegionManagerConfig extends Config {
-  static get DEFAULTS() {
-    return {
-      BLUR: 12,
-      PROC_IMAGE_SCALE: .1,       // scale at which to process image
-      THRESHOLD: 250,             // min pixel value to be added to region
-      MIN_HEIGHT: 2,              // min height for region
-      MIN_WIDTH: 2,               // min width for region
-      RECURSIVE_SCALE_FACTOR: 2,  // scale multiplier for recursive scans
-      RECURSIVE_BLUR_FACTOR: 0.5, // blur multiplier for recursive scans
-    }
-  }
-}
+const RegionManagerConfig = require('./RegionManagerConfig')
 
 let i = 0
 
@@ -30,7 +15,7 @@ class RegionManager {
 
     this._regions = []
     this._originalImage = image
-    this._image = this.preprocess(image) // With recursive scanning, this is onerous
+    this._image = this.preprocess(image)
   }
 
   preprocess(image) {
@@ -154,8 +139,8 @@ class RegionManager {
   }
 
   draw(
-    image = this._image,
     scale = 1,
+    image = this._originalImage,
     colour = 0xff0000ff // red
   ) {
     this._regions.forEach(region => {
@@ -172,8 +157,8 @@ class RegionManager {
       // Need to apply a transformation to place regions correctly on image
       this._rms.forEach(regionManager =>
         regionManager.draw(
-          image,
           scale / regionManager.config.RECURSIVE_SCALE_FACTOR,
+          image,
           0x00ff00ff
         )
       )
@@ -182,16 +167,9 @@ class RegionManager {
     return this
   }
 
-  drawAndSave(filename, image = this._image, scale = 1) {
-    this.draw(image, scale)
-    return image.write(filename)
-  }
-
-  async drawAndOpen(filename, image = this._image, scale = 1) {
-    await this.drawAndSave(filename, image, scale)
-
-    // Without setTimeout seems unreliable ...
-    return setTimeout(() => proc.execSync(`open ${filename}`), 250)
+  async save(filename, image = this._originalImage) {
+    await image.write(filename)
+    return this
   }
 
   get length() {
@@ -199,6 +177,4 @@ class RegionManager {
   }
 }
 
-module.exports = {
-  RegionManager, RegionManagerConfig
-}
+module.exports = RegionManager

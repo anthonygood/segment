@@ -1,7 +1,8 @@
 const jimp = require('jimp')
 
-const { RegionManager, RegionManagerConfig } = require('./RegionManager/RegionManager')
-const { getPath, getOutputPath } = require('./util/fs')
+const RegionManager = require('./RegionManager/RegionManager')
+const RegionManagerConfig = require('./RegionManager/RegionManagerConfig')
+const { getPath, getOutputPath, open } = require('./util/fs')
 
 const PROC_IMAGE_TO_FULL_SIZE_SCALE = 1 / RegionManagerConfig.DEFAULTS.PROC_IMAGE_SCALE
 
@@ -9,10 +10,16 @@ const process = async filename => {
   const filepath = getPath(filename)
   const outputFile = getOutputPath(filename)
   const image = await jimp.read(filepath)
-  const regions = new RegionManager(image).scan(2)
+  const regions = await new RegionManager(image)
+    .scan(2)
+    .draw(PROC_IMAGE_TO_FULL_SIZE_SCALE)
+    .save(outputFile)
 
-  // await regions.drawAndOpen('region_' + outputFile)
-  await regions.drawAndOpen(outputFile, image, PROC_IMAGE_TO_FULL_SIZE_SCALE)
+  open(outputFile)
+
+  await regions.draw(1, regions._image).save('region_' + outputFile, regions._image)
+  open('region_' + outputFile)
+
   return regions
 }
 
