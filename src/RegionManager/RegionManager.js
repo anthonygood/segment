@@ -6,13 +6,13 @@ const { lineX, lineY } = require('../util/draw')
 class RegionManagerConfig extends Config {
   static get DEFAULTS() {
     return {
-      BLUR: 10,
-      PROC_IMAGE_SCALE: .1, // scale for processing image at
-      DRAW_SCALE: 10,    // NOT NEEDED? scale back up from processed image to full size
-      THRESHOLD: 240,       // min pixel value to be added to region
-      MIN_HEIGHT: 2,
-      MIN_WIDTH: 2,
-      RECURSIVE_SCALE_FACTOR: 2,
+      BLUR: 12,
+      PROC_IMAGE_SCALE: .1,       // scale at which to process image
+      THRESHOLD: 240,             // min pixel value to be added to region
+      MIN_HEIGHT: 2,              // min height for region
+      MIN_WIDTH: 2,               // min width for region
+      RECURSIVE_SCALE_FACTOR: 2,  // scale multiplier for recursive scans
+      RECURSIVE_BLUR_FACTOR: 0.5, // blur multiplier for recursive scans
     }
   }
 }
@@ -25,16 +25,10 @@ class RegionManager {
       config :
       new RegionManagerConfig(config)
 
-    // TODO: set bounds here? or in scan()?
-    // Maybe no need, but possibly need a transform to apply region over master-region
     this.transformX = transformX
     this.transformY = transformY
     this.id = ++i
 
-    console.log('this transform: ', this.id, this.transformX, this.transformY)
-
-    // this.w = w
-    // this.h = h
     this._regions = []
     this._originalImage = image
     this._image = this.preprocess(image) // With recursive scanning, this is onerous
@@ -113,12 +107,12 @@ class RegionManager {
         region => {
           const {
             BLUR,
+            RECURSIVE_BLUR_FACTOR,
             PROC_IMAGE_SCALE,
-            DRAW_SCALE,
             RECURSIVE_SCALE_FACTOR,
           } = this.config
           // TODO: this logic could be moved to constructor?
-          const scaled = region.scale(DRAW_SCALE)
+          const scaled = region.scale(1 / PROC_IMAGE_SCALE)
           const { lo: [x1, y1] } = scaled
           const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
 
@@ -126,7 +120,7 @@ class RegionManager {
             regionImage,
             {
               ...this.config,
-              BLUR: BLUR / depth,
+              BLUR: BLUR * RECURSIVE_BLUR_FACTOR,
               PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
             },
             ...scaled.lo
