@@ -1,14 +1,13 @@
 const proc = require('child_process')
 const Region = require('../Region/Region')
 const Config = require('../util/Config')
-const { lineX, lineY } = require('../util/draw')
 
 class RegionManagerConfig extends Config {
   static get DEFAULTS() {
     return {
       BLUR: 12,
       PROC_IMAGE_SCALE: .1,       // scale at which to process image
-      THRESHOLD: 240,             // min pixel value to be added to region
+      THRESHOLD: 250,             // min pixel value to be added to region
       MIN_HEIGHT: 2,              // min height for region
       MIN_WIDTH: 2,               // min width for region
       RECURSIVE_SCALE_FACTOR: 2,  // scale multiplier for recursive scans
@@ -160,14 +159,7 @@ class RegionManager {
     colour = 0xff0000ff // red
   ) {
     this._regions.forEach(region => {
-      const { lo: [x1, y1], hi: [x2, y2] } = region.scale(scale)
-
-      const lines = [
-        lineY(y1, x1, x2),
-        lineY(y2, x1, x2),
-        lineX(x1, y1, y2),
-        lineX(x2, y1, y2),
-      ]
+      const lines = region.scale(scale).border()
 
       for (const line of lines) {
         for (const [x, y] of line) {

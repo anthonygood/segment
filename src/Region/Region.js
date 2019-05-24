@@ -1,5 +1,6 @@
 const range = require('../util/range')
 const Config = require('../util/Config')
+const { lineX, lineY } = require('../util/draw')
 
 class RegionConfig extends Config {
   static get DEFAULTS() {
@@ -68,14 +69,14 @@ class Region {
     )
   }
 
-  bounds() {
-    const [loX, loY] = this.lo
-    const [hiX, hiY] = this.hi
+  border() {
+    const { lo: [x1, y1], hi: [x2, y2] } = this
+
     return [
-      [loX, loY],
-      [hiX, hiY],
-      [hiX, loY],
-      [hiX, hiY]
+      lineY(y1, x1, x2),
+      lineY(y2, x1, x2),
+      lineX(x1, y1, y2),
+      lineX(x2, y1, y2),
     ]
   }
 
