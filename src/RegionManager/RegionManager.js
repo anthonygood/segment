@@ -1,9 +1,16 @@
 const Region = require('../Region/Region')
 const RegionManagerConfig = require('./RegionManagerConfig')
 const { bisect } = require('../util/util')
-const { GREEN, RED } = require('../util/draw')
+const { BLUE, GREEN, RED } = require('../util/draw')
 
 let i = 0
+
+const getNextColour = colour =>
+  ({
+    [RED]: BLUE,
+    [BLUE]: GREEN,
+    [GREEN]: RED,
+  }[colour])
 
 class RegionManager {
   constructor(image, config, transformX = 0, transformY = 0) {
@@ -142,12 +149,11 @@ class RegionManager {
     })
 
     if (this._rms) {
-      // Need to apply a transformation to place regions correctly on image
       this._rms.forEach(regionManager =>
         regionManager.draw(
           scale / regionManager.config.RECURSIVE_SCALE_FACTOR,
           image,
-          GREEN
+          getNextColour(colour)
         )
       )
     }
