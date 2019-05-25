@@ -102,7 +102,8 @@ class RegionManager {
               BLUR: BLUR * RECURSIVE_BLUR_FACTOR,
               PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
             },
-            ...scaled.lo
+            x1 + this.transformX,
+            y1 + this.transformY
           ).scan(depth - 1)
         }
       )
