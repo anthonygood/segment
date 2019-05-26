@@ -13,13 +13,13 @@ const getNextColour = colour =>
   }[colour])
 
 class RegionManager {
-  constructor(image, config, transformX = 0, transformY = 0) {
+  constructor(image, config, translateX = 0, translateY = 0) {
     this.config = config instanceof RegionManagerConfig ?
       config :
       new RegionManagerConfig(config)
 
-    this.transformX = transformX
-    this.transformY = transformY
+    this.translateX = translateX
+    this.translateY = translateY
     this.id = ++i
 
     this._regions = []
@@ -80,38 +80,40 @@ class RegionManager {
     this.cleanRegions()
 
     if (depth > 1) {
-      console.log('Scanning region recursively.')
-
-      this._rms = this._regions.map(
-        region => {
-          const {
-            BLUR,
-            RECURSIVE_BLUR_FACTOR,
-            PROC_IMAGE_SCALE,
-            RECURSIVE_SCALE_FACTOR,
-          } = this.config
-          // TODO: this logic could be moved to constructor?
-          const scaled = region.scale(1 / PROC_IMAGE_SCALE)
-          const { lo: [x1, y1] } = scaled
-          const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
-
-          return new RegionManager(
-            regionImage,
-            {
-              ...this.config,
-              BLUR: BLUR * RECURSIVE_BLUR_FACTOR,
-              PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
-            },
-            x1 + this.transformX,
-            y1 + this.transformY
-          ).scan(depth - 1)
-        }
-      )
-
-      this.cleanRegionManagers()
+      this.recursiveScan(depth)
     }
 
     return this
+  }
+
+  recursiveScan(depth) {
+    this._rms = this._regions.map(
+      region => {
+        const {
+          BLUR,
+          RECURSIVE_BLUR_FACTOR,
+          PROC_IMAGE_SCALE,
+          RECURSIVE_SCALE_FACTOR,
+        } = this.config
+        // TODO: this logic could be moved to constructor?
+        const scaled = region.scale(1 / PROC_IMAGE_SCALE)
+        const { lo: [x1, y1] } = scaled
+        const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
+
+        return new RegionManager(
+          regionImage,
+          {
+            ...this.config,
+            BLUR: BLUR * RECURSIVE_BLUR_FACTOR,
+            PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
+          },
+          x1 + this.translateX,
+          y1 + this.translateY
+        ).scan(depth - 1)
+      }
+    )
+
+    this.cleanRegionManagers()
   }
 
   cleanRegions() {
@@ -144,7 +146,7 @@ class RegionManager {
 
       for (const line of lines) {
         for (const [x, y] of line) {
-          image.setPixelColour(colour, x + this.transformX, y + this.transformY)
+          image.setPixelColour(colour, x + this.translateX, y + this.translateY)
         }
       }
     })
