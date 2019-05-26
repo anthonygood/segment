@@ -6,18 +6,18 @@
   "scripts": {
     "start": "node src",
     "test": "mocha --recursive ./src/*/*.test.js",
-    "clean": "rm *-PROCESSED.png"
+    "clean": "rm *-PROCESSED.png",
+    "train:jobtitles": "node src/JobTitleClassifier/train"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "get-pixels": "^3.3.2",
-    "jimp": "^0.6.4"
+    "jimp": "^0.6.4",
+    "natural": "^0.6.3"
   },
   "devDependencies": {
     "mocha": "^6.1.4"
   },
-  "mocha": {
-
-  }
+  "mocha": {}
 }
