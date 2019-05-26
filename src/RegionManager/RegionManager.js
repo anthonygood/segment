@@ -87,28 +87,35 @@ class RegionManager {
   }
 
   recursiveScan(depth) {
-    this._rms = this._regions.map(
+    const {
+      _originalImage,
+      _regions,
+      config,
+      translateX,
+      translateY
+    } = this
+    const {
+      BLUR,
+      RECURSIVE_BLUR_FACTOR,
+      PROC_IMAGE_SCALE,
+      RECURSIVE_SCALE_FACTOR,
+    } = config
+
+    this._rms = _regions.map(
       region => {
-        const {
-          BLUR,
-          RECURSIVE_BLUR_FACTOR,
-          PROC_IMAGE_SCALE,
-          RECURSIVE_SCALE_FACTOR,
-        } = this.config
         // TODO: this logic could be moved to constructor?
-        const scaled = region.scale(1 / PROC_IMAGE_SCALE)
-        const { lo: [x1, y1] } = scaled
-        const regionImage = this._originalImage.clone().crop(x1, y1, scaled.width, scaled.height)
+        const { lo: [x1, y1], width, height } = region.scale(1 / PROC_IMAGE_SCALE)
+        const regionImage = _originalImage.clone().crop(x1, y1, width, height)
 
         return new RegionManager(
           regionImage,
           {
-            ...this.config,
+            ...config,
             BLUR: BLUR * RECURSIVE_BLUR_FACTOR,
             PROC_IMAGE_SCALE: PROC_IMAGE_SCALE * RECURSIVE_SCALE_FACTOR, // Increment scale
           },
-          x1 + this.translateX,
-          y1 + this.translateY
+          x1 + translateX,
+          y1 + translateY
         ).scan(depth - 1)
       }
     )
