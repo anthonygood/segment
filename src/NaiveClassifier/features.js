@@ -2,9 +2,7 @@ const {
   WordTokenizer,
   SentenceTokenizer
 } = require('natural')
-const { precision } = require('../util/util')
-
-const twoDecimalPlaces = precision(100)
+const { twoDecimalPlaces } = require('../util/util')
 
 // Taken without much thought from https://emailregex.com
 const EMAIL_REGEX = /(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -28,8 +26,14 @@ const capitalisedRatio = str => {
   return matches / tokens.length
 }
 
-const sentences = str =>
-  sTokenizer.tokenize(str)
+const sentences = str => {
+  // SentenceTokenizer blows up on single words
+  try {
+    return sTokenizer.tokenize(str)
+  } catch (err) {
+    return 0
+  }
+}
 
 const countSentences = str =>
   sentences(str).length

@@ -22,6 +22,8 @@ const promise = fn => (...args) =>
 const precision = prec => num =>
   Math.round(num * prec) / prec
 
+const twoDecimalPlaces = precision(100)
+
 module.exports = {
-  bisect, promise, precision
+  bisect, promise, twoDecimalPlaces
 }
