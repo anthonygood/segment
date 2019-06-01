@@ -13,6 +13,15 @@ const bisect = (arr, fn) => {
   return [yes, no]
 }
 
+const promise = fn => (...args) =>
+  new Promise((resolve, reject) =>
+    fn(...args, (err, ...callbackArgs) =>
+      err ? reject(err) : resolve(...callbackArgs)
+    ))
+
+const precision = prec => num =>
+  Math.round(num * prec) / prec
+
 module.exports = {
-  bisect
+  bisect, promise, precision
 }

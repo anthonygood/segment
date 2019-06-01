@@ -2,6 +2,7 @@ const assert = require('assert')
 const {
   containsEmail,
   containsPhone,
+  egocentrism,
   lengthLessThan50,
   noFullStops,
   capitalisedRatio
@@ -110,6 +111,39 @@ describe('features', () => {
       assert.equal(
         containsEmail('just a string'),
         false
+      )
+    })
+  })
+
+  describe('egocentrism', () => {
+    it('returns a number greater than 0 for egocentric prose', () => {
+      assert.equal(
+        egocentrism(
+          "I was responsible for registering clients and understanding the brief of each case before referring them to the solicitors. I was therefore required to extract critical information for reporting to the solicitors while I was also in charge of managing client folders and ensuring they contain all the necessary information and documents needed for the provision of a legal advice. In addition, I shadowed 2 solicitors throughout client interviews and served as a note-taker during the process.",
+        ),
+        .05
+      )
+      assert.equal(
+        egocentrism(
+          "I flew and I flew. I flew further than I've ever flown.",
+        ),
+        .31
+      )
+
+      assert.equal(
+        egocentrism(
+          "I've been responsible for my own business awhile. I'm great."
+        ),
+        .17
+      )
+    })
+
+    it('returns 0 for non-egocentric prose', () => {
+      assert.equal(
+        egocentrism(
+          "Proving executive assistance to the Group HR Director, Assisting with Learning & development programmes, event & travel management, preparing Exco reports and presentations, expenses, email & diary management. HR Project work",
+        ),
+        0
       )
     })
   })
