@@ -201,8 +201,13 @@ class RegionManager {
   }
 
   async getDocumentGraph(graph = {}) {
+    const { width, height } = this._originalImage.bitmap
+    const area = width * height
+    const text = await this.recogniseText()
     const thisNode = {
-      text: await this.recogniseText()
+      text,
+      area,
+      prominence: Math.floor(area / text.length)
     }
 
     if (this._rms) {
@@ -212,7 +217,6 @@ class RegionManager {
     }
 
     graph[this.id] = thisNode
-
     return graph
   }
 
