@@ -14,7 +14,8 @@
   "dependencies": {
     "get-pixels": "^3.3.2",
     "jimp": "^0.6.4",
-    "natural": "^0.6.3"
+    "natural": "^0.6.3",
+    "penteract": "^0.4.0"
   },
   "devDependencies": {
     "mocha": "^6.1.4"
