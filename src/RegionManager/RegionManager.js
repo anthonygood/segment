@@ -1,3 +1,5 @@
+const { MIME_PNG } = require('jimp')
+const { recognize } = require('penteract')
 const Region = require('../Region/Region')
 const RegionManagerConfig = require('./RegionManagerConfig')
 const { bisect } = require('../util/util')
@@ -79,7 +81,10 @@ class RegionManager {
 
     this.cleanRegions()
 
-    if (depth > 1) {
+    // Potentially the _regions.length check will mean large undifferentiated
+    // regions won't get sub-divided (imagine a big page with a small area of detail)
+    // but this may be appropriate or even desirable.
+    if (depth > 1 && this._regions.length > 1) {
       this.recursiveScan(depth)
     }
 
@@ -137,7 +142,7 @@ class RegionManager {
 
   cleanRegionManagers() {
     if (this._rms) this._rms = this._rms.filter(regionManager =>
-      regionManager._regions.length > 1
+      regionManager._regions.length
     )
 
     return this
@@ -169,6 +174,46 @@ class RegionManager {
     }
 
     return this
+  }
+
+  async getText(allText = {}) {
+    if (this._rms) {
+      for (const region of this._rms) {
+        await region.getText(allText)
+      }
+    } else {
+      const text = await this.recogniseText()
+      text && (allText[this.id] = text)
+    }
+
+    return allText
+  }
+
+  async recogniseText() {
+    return new Promise((resolve, reject) => {
+      this._originalImage.getBuffer(MIME_PNG, async (err, buff) => {
+        if (err) reject(err)
+
+        const text = await recognize(buff)
+        resolve(text)
+      })
+    })
+  }
+
+  async getDocumentGraph(graph = {}) {
+    const thisNode = {
+      text: await this.recogniseText()
+    }
+
+    if (this._rms) {
+      for (const rm of this._rms) {
+        await rm.getDocumentGraph(thisNode)
+      }
+    }
+
+    graph[this.id] = thisNode
+
+    return graph
   }
 
   async save(filename, image = this._originalImage) {
