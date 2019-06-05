@@ -1,9 +1,8 @@
-const { MIME_PNG } = require('jimp')
-const { recognize } = require('penteract')
 const Region = require('../Region/Region')
 const RegionManagerConfig = require('./RegionManagerConfig')
 const { bisect } = require('../util/util')
 const { BLUE, GREEN, RED } = require('../util/draw')
+const getDocumentGraph = require('../DocumentGraph/getDocumentGraph')
 
 let i = 0
 
@@ -23,9 +22,9 @@ class RegionManager {
     this.translateX = translateX
     this.translateY = translateY
     this.id = ++i
+    this.originalImage = image
 
     this._regions = []
-    this._originalImage = image
     this._image = this.preprocess(image)
   }
 
@@ -93,7 +92,7 @@ class RegionManager {
 
   recursiveScan(depth) {
     const {
-      _originalImage,
+      originalImage,
       _regions,
       config,
       translateX,
@@ -110,7 +109,7 @@ class RegionManager {
       region => {
         // TODO: this logic could be moved to constructor?
         const { lo: [x1, y1], width, height } = region.scale(1 / PROC_IMAGE_SCALE)
-        const regionImage = _originalImage.clone().crop(x1, y1, width, height)
+        const regionImage = originalImage.clone().crop(x1, y1, width, height)
 
         return new RegionManager(
           regionImage,
@@ -150,7 +149,7 @@ class RegionManager {
 
   draw(
     scale = 1,
-    image = this._originalImage,
+    image = this.originalImage,
     colour = RED
   ) {
     this._regions.forEach(region => {
@@ -176,57 +175,21 @@ class RegionManager {
     return this
   }
 
-  async getText(allText = {}) {
-    if (this._rms) {
-      for (const region of this._rms) {
-        await region.getText(allText)
-      }
-    } else {
-      const text = await this.recogniseText()
-      text && (allText[this.id] = text)
-    }
-
-    return allText
+  async getDocumentGraph(parent) {
+    return getDocumentGraph(this)
   }
 
-  async recogniseText() {
-    return new Promise((resolve, reject) => {
-      this._originalImage.getBuffer(MIME_PNG, async (err, buff) => {
-        if (err) reject(err)
-
-        const text = await recognize(buff)
-        resolve(text)
-      })
-    })
-  }
-
-  async getDocumentGraph(graph = {}) {
-    const { width, height } = this._originalImage.bitmap
-    const area = width * height
-    const text = await this.recogniseText()
-    const thisNode = {
-      text,
-      area,
-      prominence: Math.floor(area / text.length)
-    }
-
-    if (this._rms) {
-      for (const rm of this._rms) {
-        await rm.getDocumentGraph(thisNode)
-      }
-    }
-
-    graph[this.id] = thisNode
-    return graph
-  }
-
-  async save(filename, image = this._originalImage) {
+  async save(filename, image = this.originalImage) {
     await image.write(filename)
     return this
   }
 
   get length() {
     return this._regions.length
+  }
+
+  get subRegions() {
+    return this._rms || null
   }
 }
 
