@@ -3,27 +3,11 @@ const {
   containsEmail,
   containsPhone,
   egocentrism,
-  lengthLessThan50,
   noFullStops,
   capitalisedRatio
 } = require('./features')
 
 describe('features', () => {
-  describe('lengthLessThan100', () => {
-    it('is TRUE for string under 100 chars', () => {
-      assert.equal(
-        lengthLessThan50('Some fairly short string'),
-        true
-      )
-    })
-    it('is FALSE for string under 100 chars', () => {
-      assert.equal(
-        lengthLessThan50('Some string that goes on a bit and is quite a bit longer'),
-        false
-      )
-    })
-  })
-
   describe('noFullStops', () => {
     it('is TRUE for string with no full stops', () => {
       assert.equal(

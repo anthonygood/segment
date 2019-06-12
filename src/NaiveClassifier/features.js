@@ -16,7 +16,6 @@ const count = (arr, fn) => arr.reduce(
   0
 )
 
-const lengthLessThan50 = str => str.length < 50
 const noFullStops = str => !str.includes('.')
 
 const capitalisedRatio = str => {
@@ -58,7 +57,6 @@ module.exports = {
   containsPhone,
   countSentences,
   egocentrism,
-  lengthLessThan50,
   noFullStops,
   capitalisedRatio
 }

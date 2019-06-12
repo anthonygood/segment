@@ -32,9 +32,7 @@ describe('NaiveClassifier', () => {
     itClassifiesRandomSampleFrom(descriptions).as('job description')
   })
 
-
-  // describe('headings', () => {
-
-  // })
-
+  describe('headings', () => {
+    itClassifiesRandomSampleFrom(headings).as('heading')
+  })
 })

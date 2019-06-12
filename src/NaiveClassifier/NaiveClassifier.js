@@ -4,7 +4,6 @@ const {
   containsPhone,
   countSentences,
   egocentrism,
-  lengthLessThan50,
   noFullStops,
   capitalisedRatio
 } = require('./features')
@@ -21,6 +20,8 @@ const mustNotContainLineBreaks = str => {
   }
 }
 
+const lengthLessThan50 = str => str.length < 50
+
 const jobTitle = new TextClassification(
   'job title',
   lengthLessThan50,
@@ -35,13 +36,15 @@ jobTitle.validations = [
 
 const containsContact = str => /\bcontact\b/i.test(str)
 const containsTel = str => /\btel/i.test(str)
+const lengthLessThan100 = str => str.length < 100
 
 const contactDetails = new TextClassification(
   'contact info',
   containsContact,
   containsEmail,
   containsPhone,
-  containsTel
+  containsTel,
+  lengthLessThan100
 )
 
 const lengthGreaterThan100 = str => str.length > 100
@@ -63,7 +66,51 @@ const jobDescription = new TextClassification(
   isEgocentric
 )
 
+const containsHeadingWord = str => {
+  const subject = str.toLowerCase()
+  const headingWords = [
+    'education',
+    'experience',
+    'skill',
+    'achievement'
+  ]
+  return headingWords.some(
+    heading => subject.includes(heading)
+  )
+}
+
+const mustNotBeMoreThan30Length = str => {
+  if (str.length > 30) {
+    throw new Error('String over 30 chars')
+  }
+}
+
+const mustNotContainPunctuation = str => {
+  if (str.match(/[,\.;:!]/)) {
+    throw new Error('String contains forbidden punctuation')
+  }
+}
+
+const lengthLessThan20 = str => str.length < 20
+const lengthLessThan30 = str => str.length < 30
+
+const heading = new TextClassification(
+  'heading',
+  containsHeadingWord,
+  lengthLessThan20,
+  lengthLessThan30,
+  noFullStops,
+  isQuiteCapitalised
+)
+
+heading.validations = [
+  mustNotBeMoreThan30Length,
+  mustNotContainLineBreaks,
+  mustNotContainPunctuation
+]
+
 const classifications = [
+  heading,
   contactDetails,
   jobDescription,
   jobTitle
