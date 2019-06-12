@@ -83,7 +83,7 @@ class RegionManager {
     // Potentially the _regions.length check will mean large undifferentiated
     // regions won't get sub-divided (imagine a big page with a small area of detail)
     // but this may be appropriate or even desirable.
-    if (depth > 1 && this._regions.length > 1) {
+    if (depth > 1) {
       this.recursiveScan(depth)
     }
 

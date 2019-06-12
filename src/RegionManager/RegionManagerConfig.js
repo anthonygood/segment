@@ -3,8 +3,8 @@ const Config = require('../util/Config')
 class RegionManagerConfig extends Config {
   static get DEFAULTS() {
     return {
-      BLUR: 12,
-      PROC_IMAGE_SCALE: .1,       // scale at which to process image
+      BLUR: 10,
+      PROC_IMAGE_SCALE: 0.1,      // scale at which to process image
       THRESHOLD: 250,             // min pixel value to be added to region
       MIN_HEIGHT: 2,              // min height for region
       MIN_WIDTH: 2,               // min width for region
